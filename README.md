@@ -22,7 +22,7 @@ This is a custom metricbeat that monitor weblogic domains. Capture information a
 
 ### Download Release
 
-[https://github.com/carlgira/weblogic-beat/releases](https://github.com/carlgira/weblogic-beat/releases)
+[https://github.com/carlgira/weblogicbeat/releases](https://github.com/carlgira/weblogic-beat/releases)
 
 ### Run
 
@@ -36,6 +36,7 @@ To run Weblogicbeat with debugging output enabled, run:
 
 It includes a set of visualizations and one dashboard for weblogic monitoring. Import the file [kibana-weblogic-dashboard-export.json](kibana-weblogic-dashboard-export.json)
 
+![](kibana-dashboard.png)
 
 ### Weblogicbeat configuration
 
@@ -78,13 +79,12 @@ go get github.com/Jeffail/gabs
 go get gopkg.in/resty.v1
 ```
 
-
 ### Init Project
 To get running with Weblogicbeat and also install the
 dependencies, run the following command:
 
 ```
-make setup
+mage setup
 ```
 
 *I had some issues on my mac with the make setup. I had to create manually a python2 env in build/python-env and install with pip the functools32 dependency*
@@ -111,4 +111,5 @@ This will fetch and create all images required for the build process. The whole 
 
 
 ## Future work
-Include other information gathered from JMX. (use jolokia)
+- The management/tenant-monitoring REST api is deprecated, update to new api.
+- Include other information gathered from JMX. (use jolokia)

@@ -91,7 +91,7 @@ func (bt *Weblogicbeat) ServerStatusEvent() {
 				"srv_heapFreeCurrent": int(server["heapFreeCurrent"].(float64)/1000000),
 				"srv_heapSizeCurrent": int(server["heapSizeCurrent"].(float64)/1000000),
 				"srv_activeHttpSessionCount": server["activeHttpSessionCount"],
-				"srv_jvmProcessorLoad": server["jvmProcessorLoad"],
+				"srv_jvmProcessorLoad": 0.3, // FIX  server["jvmProcessorLoad"]
 				"srv_health": server_health["state"],
 			},
 		}

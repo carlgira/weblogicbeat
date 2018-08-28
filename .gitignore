@@ -1,7 +1,9 @@
 /.idea
 /build
-
+/vendor
 .DS_Store
+/logs
 /weblogicbeat
 /weblogicbeat.test
 *.pyc
+.DS_Store
