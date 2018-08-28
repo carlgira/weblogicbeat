@@ -1,0 +1,5 @@
+weblogicbeat
+Copyright 2017 Carlos
+
+This product includes software developed by The Apache Software
+Foundation (http://www.apache.org/).

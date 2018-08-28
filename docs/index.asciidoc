@@ -1,0 +1,5 @@
+= Weblogicbeat Docs
+
+Welcome to the Weblogicbeat documentation.
+
+

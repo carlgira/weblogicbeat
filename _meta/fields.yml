@@ -1,0 +1,109 @@
+- key: weblogicbeat
+  title: weblogicbeat
+  description:
+  fields:
+    - name: server
+      type: string
+      required: true
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: metric_type
+      type: string
+      required: true
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: srv_name
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: srv_state
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: srv_heapFreeCurrent
+      type: int
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: srv_heapSizeCurrent
+      type: int
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: srv_activeHttpSessionCount
+      type: int
+      required: true
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: srv_jvmProcessorLoad
+      type: int
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: srv_health
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: ds_name
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: ds_state
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: ds_state
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: ds_enabled
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: ds_activeConnectionsCurrentCount
+      type: int
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: ds_connectionsTotalCount
+      type: int
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: ds_activeConnectionsAverageCount
+      type: int
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: app_name
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: app_state
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: app_health
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: app_pendingRequests
+      type: int
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: app_completedRequests
+      type: int
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
