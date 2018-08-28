@@ -23,6 +23,12 @@ copy-vendor:
 	rm -rf vendor/github.com/elastic/beats/.git vendor/github.com/elastic/beats/x-pack
 	mkdir -p vendor/github.com/magefile
 	cp -R ${BEAT_GOPATH}/src/github.com/elastic/beats/vendor/github.com/magefile/mage vendor/github.com/magefile
+	cp -r ${BEAT_GOPATH}/src/github.com/Jeffail vendor/github.com
+	rm -rf ${BEAT_GOPATH}/src/github.com/Jeffail/gabs/.git
+	cp -rf ${BEAT_GOPATH}/src/github.com/Jeffail vendor/github.com
+	rm -rf ${BEAT_GOPATH}/src/github.com/Jeffail/gabs/.git
+	cp -rf ${BEAT_GOPATH}/src/gopkg.in vendor/gopkg.in
+	rm -rf ${BEAT_GOPATH}/src/gopkg.in/resty.v1/.git
 
 .PHONY: git-init
 git-init:

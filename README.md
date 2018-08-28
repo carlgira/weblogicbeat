@@ -1,15 +1,83 @@
 # Weblogicbeat
 
-Welcome to Weblogicbeat.
+Weblogic monitoring tool for ELK (elasticsearch, logstash, kibana).
 
-Ensure that this folder is at the following location:
-`${GOPATH}/src/github.com/carlgira/weblogicbeat`
+This is a custom metricbeat that monitor weblogic domains. Capture information about:
 
-## Getting Started with Weblogicbeat
+- Server state and health
+- Memory use
+- CPU
+- Datasource health and statistics
+- Applications health and statistics
 
-### Requirements
+## Configuration
 
-* [Golang](https://golang.org/dl/) 1.7
+### Enable RESTful Management Services
+
+1. Under Domain structure, click on the domain name
+2. Under Configuration > General, expand the Advanced section
+3. Select the check box RESTful Management Services and click Save.
+
+![](docs/1723957.png)
+
+### Download Release
+
+[https://github.com/carlgira/weblogic-beat/releases](https://github.com/carlgira/weblogic-beat/releases)
+
+### Run
+
+To run Weblogicbeat with debugging output enabled, run:
+
+```
+./weblogicbeat -c weblogicbeat.yml
+```
+
+### Kibana
+
+It includes a set of visualizations and one dashboard for weblogic monitoring. Import the file [kibana-weblogic-dashboard-export.json](kibana-weblogic-dashboard-export.json)
+
+
+### Weblogicbeat configuration
+
+Sample of configuration file
+
+```
+weblogicbeat:
+  period: 10s
+  host: http://localhost:7001
+  username: weblogic
+  password: welcome1
+  datasources: ["jdbc%2Fmelia"]
+  applications: ["StuckThreadForFree"]
+```
+- period: How often an event is sent to the output
+- host: Admin host and port
+- username: Weblogic admin user
+- password: Weblogic admin password
+- datasources: Array of datasources to monitor
+- applications: Array of applications to monitor
+
+## Compilation
+
+### Configure golang
+
+- Install [Golang](https://golang.org/dl/) 1.7
+- Create a directory for go and create the env variable "GOPATH"
+
+```
+GOPATH=~/go
+mkdir -p $GOPATH
+echo "export GOPATH=${GOPATH}" >> ~/.bash_profile
+```
+
+### Install dependencies
+
+```
+go get github.com/elastic/beats
+go get github.com/Jeffail/gabs
+go get gopkg.in/resty.v1
+```
+
 
 ### Init Project
 To get running with Weblogicbeat and also install the
@@ -19,16 +87,8 @@ dependencies, run the following command:
 make setup
 ```
 
-It will create a clean git history for each major step. Note that you can always rewrite the history if you wish before pushing your changes.
+*I had some issues on my mac with the make setup. I had to create manually a python2 env in build/python-env and install with pip the functools32 dependency*
 
-To push Weblogicbeat in the git repository, run the following commands:
-
-```
-git remote set-url origin https://github.com/carlgira/weblogicbeat
-git push origin master
-```
-
-For further development, check out the [beat developer guide](https://www.elastic.co/guide/en/beats/libbeat/current/new-beat.html).
 
 ### Build
 
@@ -36,82 +96,19 @@ To build the binary for Weblogicbeat run the command below. This will generate a
 in the same directory with the name weblogicbeat.
 
 ```
-make
+mage build
 ```
-
-
-### Run
-
-To run Weblogicbeat with debugging output enabled, run:
-
-```
-./weblogicbeat -c weblogicbeat.yml -e -d "*"
-```
-
-
-### Test
-
-To test Weblogicbeat, run the following command:
-
-```
-make testsuite
-```
-
-alternatively:
-```
-make unit-tests
-make system-tests
-make integration-tests
-make coverage-report
-```
-
-The test coverage is reported in the folder `./build/coverage/`
-
-### Update
-
-Each beat has a template for the mapping in elasticsearch and a documentation for the fields
-which is automatically generated based on `fields.yml` by running the following command.
-
-```
-make update
-```
-
-
-### Cleanup
-
-To clean  Weblogicbeat source code, run the following commands:
-
-```
-make fmt
-make simplify
-```
-
-To clean up the build directory and generated artifacts, run:
-
-```
-make clean
-```
-
-
-### Clone
-
-To clone Weblogicbeat from the git repository, run the following commands:
-
-```
-mkdir -p ${GOPATH}/src/github.com/carlgira/weblogicbeat
-git clone https://github.com/carlgira/weblogicbeat ${GOPATH}/src/github.com/carlgira/weblogicbeat
-```
-
-
-For further development, check out the [beat developer guide](https://www.elastic.co/guide/en/beats/libbeat/current/new-beat.html).
-
 
 ## Packaging
 
 The beat frameworks provides tools to crosscompile and package your beat for different platforms. This requires [docker](https://www.docker.com/) and vendoring as described above. To build packages of your beat, run the following command:
 
 ```
-make package
+mage package
 ```
 
 This will fetch and create all images required for the build process. The whole process to finish can take several minutes.
+
+
+## Future work
+Include other information gathered from JMX. (use jolokia)
