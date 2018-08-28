@@ -36,7 +36,7 @@ To run Weblogicbeat with debugging output enabled, run:
 
 It includes a set of visualizations and one dashboard for weblogic monitoring. Import the file [kibana-weblogic-dashboard-export.json](kibana-weblogic-dashboard-export.json)
 
-![](kibana-dashboard.png)
+![](docs/kibana-dashboard.png)
 
 ### Weblogicbeat configuration
 
