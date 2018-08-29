@@ -78,6 +78,7 @@ echo "export GOPATH=${GOPATH}" >> ~/.bash_profile
 go get github.com/elastic/beats
 go get github.com/Jeffail/gabs
 go get gopkg.in/resty.v1
+go get golang.org/x/net/publicsuffix
 ```
 
 ### Init Project

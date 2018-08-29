@@ -29,6 +29,7 @@ copy-vendor:
 	rm -rf ${BEAT_GOPATH}/src/github.com/Jeffail/gabs/.git
 	cp -rf ${BEAT_GOPATH}/src/gopkg.in vendor/gopkg.in
 	rm -rf ${BEAT_GOPATH}/src/gopkg.in/resty.v1/.git
+	cp -rf ${BEAT_GOPATH}/src/golang.org vendor/golang.org
 
 .PHONY: git-init
 git-init:
