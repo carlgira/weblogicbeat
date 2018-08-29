@@ -12,6 +12,11 @@
       required: true
       description: >
         PLEASE UPDATE DOCUMENTATION
+    - name: metric_error
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
     - name: srv_name
       type: string
       required: false
@@ -89,6 +94,11 @@
         PLEASE UPDATE DOCUMENTATION
     - name: ds_activeConnectionsAverageCount
       type: int
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: ds_testpool
+      type: bool
       required: false
       description: >
         PLEASE UPDATE DOCUMENTATION

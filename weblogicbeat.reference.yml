@@ -8,6 +8,7 @@ weblogicbeat:
   host: http://localhost:7001
   username: weblogic
   password: welcome1
+  servername: server1
   datasources: ["jdbc%2Fmelia"]
   applications: ["StuckThreadForFree"]
 

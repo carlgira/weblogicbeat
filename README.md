@@ -48,8 +48,9 @@ weblogicbeat:
   host: http://localhost:7001
   username: weblogic
   password: welcome1
-  datasources: ["jdbc%2Fmelia"]
-  applications: ["StuckThreadForFree"]
+  servername: server1
+  datasources: ["EssDS", "EssDS"]
+  applications: ["StuckThreadForFree", "otherapp"]
 ```
 - period: How often an event is sent to the output
 - host: Admin host and port
@@ -87,7 +88,7 @@ dependencies, run the following command:
 mage setup
 ```
 
-*I had some issues on my mac with the make setup. I had to create manually a python2 env in build/python-env and install with pip the functools32 dependency*
+*I had some issues on my mac with the make setup. I had to create manually a python2 env in build/python-env and install with pip the functools32 dependency. Be careful when using mage clean the build directory is erased and the python-env directory needs to be created again*
 
 
 ### Build
