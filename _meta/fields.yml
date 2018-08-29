@@ -117,13 +117,23 @@
       required: false
       description: >
         PLEASE UPDATE DOCUMENTATION
-    - name: app_pendingRequests
+    - name: app_openSessionsCurrentCount
       type: int
       required: false
       description: >
         PLEASE UPDATE DOCUMENTATION
-    - name: app_completedRequests
+    - name: app_sessionsOpenedTotalCount
       type: int
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: app_openSessionsHighCount
+      type: int
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: app_componentName
+      type: string
       required: false
       description: >
         PLEASE UPDATE DOCUMENTATION

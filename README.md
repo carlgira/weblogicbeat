@@ -40,7 +40,7 @@ It includes a set of visualizations and one dashboard for weblogic monitoring. I
 
 ### Weblogicbeat configuration
 
-Sample of configuration file
+Sample configuration file
 
 ```
 weblogicbeat:
@@ -111,11 +111,10 @@ mage package
 This will fetch and create all images required for the build process. The whole process to finish can take several minutes.
 
 
-## Future work
-- The management/tenant-monitoring REST api is deprecated, update to new api.
-- Include other information gathered from JMX. (use jolokia)
-
 ## References
 
 - Using WebLogic 12C RESTful management for monitoring WebLogic Domains
 https://blog.dbi-services.com/using-weblogic-12c-restful-management-for-monitoring-weblogic-domains/
+
+- Monitoring Domain Resources
+https://docs.oracle.com/middleware/1221/wls/WLRUR/examples.htm#WLRUR203

@@ -4,13 +4,13 @@
 
 weblogicbeat:
   # Defines how often an event is sent to the output
-  period: 10s
+  period: 60s
   host: http://localhost:7001
   username: weblogic
   password: welcome1
   servername: server1
-  datasources: ["jdbc%2Fmelia"]
-  applications: ["StuckThreadForFree"]
+  datasources: ["EssDS"]
+  applications: ["ESSAPP"]
 
 #================================ General ======================================
 

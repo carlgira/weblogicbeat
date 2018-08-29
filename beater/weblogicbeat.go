@@ -3,7 +3,6 @@ package beater
 import (
 	"crypto/tls"
 	"fmt"
-	"reflect"
 	"time"
 
 	gabs "github.com/Jeffail/gabs"
@@ -60,13 +59,13 @@ func (bt *Weblogicbeat) Run(b *beat.Beat) error {
 		}
 
 		// SERVERS STATUS
-		//bt.ServerStatusEvent()
+		bt.ServerStatusEvent()
 
 		// DATASOURCES STATUS
 		bt.DatasourceStatusEvent()
 
 		// APPLICATIONS STATUS
-		//	bt.ApplicationStatusEvent()
+		bt.ApplicationStatusEvent()
 
 		counter++
 	}
@@ -77,7 +76,7 @@ func (bt *Weblogicbeat) ServerStatusEvent() {
 		SetHeader("Accept", "application/json").
 		SetHeader("X-Requested-By", "weblogicbeat").
 		SetBasicAuth(bt.config.Username, bt.config.Password).
-		Get(bt.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes?links=none&fields=name,state,healthState")
+		Get(bt.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + bt.config.ServerName + "?links=none&fields=name,state,healthState")
 
 	if err_server_status != nil {
 		bt.SendErrorEvent(bt.config.ServerName, "server_status", fmt.Sprintf("%v", err_server_status))
@@ -102,17 +101,24 @@ func (bt *Weblogicbeat) ServerStatusEvent() {
 	json_server_jvm, _ := gabs.ParseJSON([]byte(resp_server_jvm.String()))
 	server_jvm := json_server_jvm.Data().(map[string]interface{})
 
+	processCpuLoad := server_jvm["processCpuLoad"]
+	if processCpuLoad == nil {
+		processCpuLoad = 0
+	} else {
+		processCpuLoad = server_jvm["processCpuLoad"].(float64)
+	}
+
 	server_status_event := beat.Event{
 		Timestamp: time.Now(),
 		Fields: common.MapStr{
-			"server":               server["name"],
+			"server":               bt.config.ServerName,
 			"metric_type":          "server_status",
 			"srv_name":             server["name"],
 			"srv_state":            server["state"],
 			"srv_heapFreeCurrent":  int(server_jvm["heapFreeCurrent"].(float64) / 1000000),
 			"srv_heapSizeCurrent":  int(server_jvm["heapSizeCurrent"].(float64) / 1000000),
 			"srv_heapSizeMax":      int(server_jvm["heapSizeMax"].(float64) / 1000000),
-			"srv_jvmProcessorLoad": server_jvm["processCpuLoad"].(float64),
+			"srv_jvmProcessorLoad": processCpuLoad,
 			"srv_symptoms":         fmt.Sprintf("%v", server_health["symptoms"]),
 			"srv_health":           server_health["state"],
 		},
@@ -126,19 +132,21 @@ func (bt *Weblogicbeat) DatasourceStatusEvent() {
 	for _, datasource := range bt.config.Datasources {
 		resp_ds, error_ds := resty.R().
 			SetHeader("Accept", "application/json").
+			SetHeader("X-Requested-By", "weblogicbeat").
 			SetBasicAuth(bt.config.Username, bt.config.Password).
 			Get(bt.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + bt.config.ServerName + "/JDBCServiceRuntime/JDBCDataSourceRuntimeMBeans/" + datasource + "?links=none&fields=activeConnectionsCurrentCount,activeConnectionsAverageCount,connectionsTotalCount,enabled,state,name")
-
-		json_ds_status, _ := gabs.ParseJSON([]byte(resp_ds.String()))
-		dsinfo := json_ds_status.Data().(map[string]interface{})
 
 		if error_ds != nil {
 			bt.SendErrorEvent(bt.config.ServerName, "datasource_status", fmt.Sprintf("%v", error_ds))
 			return
 		}
 
+		json_ds_status, _ := gabs.ParseJSON([]byte(resp_ds.String()))
+		dsinfo := json_ds_status.Data().(map[string]interface{})
+
 		_, error_ds_test := resty.R().
 			SetHeader("Accept", "application/json").
+			SetHeader("X-Requested-By", "weblogicbeat").
 			SetBasicAuth(bt.config.Username, bt.config.Password).
 			Get(bt.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + bt.config.ServerName + "/JDBCServiceRuntime/JDBCDataSourceRuntimeMBeans/" + datasource + "/testPool")
 
@@ -168,47 +176,56 @@ func (bt *Weblogicbeat) DatasourceStatusEvent() {
 }
 
 func (bt *Weblogicbeat) ApplicationStatusEvent() {
+
 	for _, application := range bt.config.Applications {
-		resp, _ := resty.R().
+		resp_app, err_app := resty.R().
 			SetHeader("Accept", "application/json").
+			SetHeader("X-Requested-By", "weblogicbeat").
 			SetBasicAuth(bt.config.Username, bt.config.Password).
-			Get(bt.config.Host + "/management/tenant-monitoring/applications/" + application)
+			Get(bt.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + bt.config.ServerName + "/applicationRuntimes/" + application + "?links=none&fields=name,healthState")
 
-		json_application_status, _ := gabs.ParseJSON([]byte(resp.String()))
-		servers := reflect.ValueOf(json_application_status.Path("body.item.targetStates.target").Data())
-		states := reflect.ValueOf(json_application_status.Path("body.item.targetStates.state").Data())
-		health := fmt.Sprintf("%v", reflect.ValueOf(json_application_status.Path("body.item.health").Data()))
+		if err_app != nil {
+			bt.SendErrorEvent(bt.config.ServerName, "application_status", fmt.Sprintf("%v", err_app))
+			return
+		}
 
-		wm_servers := reflect.ValueOf(json_application_status.Path("body.item.workManagers.server").Data())
-		wm_pendingRequests := reflect.ValueOf(json_application_status.Path("body.item.workManagers.pendingRequests").Data())
-		wm_completedRequests := reflect.ValueOf(json_application_status.Path("body.item.workManagers.completedRequests").Data())
+		json_application_status, _ := gabs.ParseJSON([]byte(resp_app.String()))
+		appinfo := json_application_status.Data().(map[string]interface{})
+		server_health := appinfo["healthState"].(map[string]interface{})
 
-		for i := 0; i < servers.Len(); i++ {
-			server := fmt.Sprintf("%v", servers.Index(i))
-			state := fmt.Sprintf("%v", states.Index(i))
+		resp_app_comp, err_app_comp := resty.R().
+			SetHeader("Accept", "application/json").
+			SetHeader("X-Requested-By", "weblogicbeat").
+			SetBasicAuth(bt.config.Username, bt.config.Password).
+			Get(bt.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + bt.config.ServerName + "/applicationRuntimes/" + application + "/componentRuntimes?fields=openSessionsCurrentCount,sessionsOpenedTotalCount,openSessionsHighCount,applicationIdentifier,status,componentName&links=none")
 
-			for e := 0; e < wm_servers.Len(); e++ {
-				wm_server := fmt.Sprintf("%v", wm_servers.Index(e))
-				if server == wm_server {
-					wm_pendingRequest := fmt.Sprintf("%v", wm_pendingRequests.Index(e))
-					wm_completedRequest := fmt.Sprintf("%v", wm_completedRequests.Index(e))
+		if err_app_comp != nil {
+			bt.SendErrorEvent(bt.config.ServerName, "application_status", fmt.Sprintf("%v", err_app_comp))
+			continue
+		}
 
-					application_status_event := beat.Event{
-						Timestamp: time.Now(),
-						Fields: common.MapStr{
-							"server":                server,
-							"metric_type":           "application_status",
-							"app_name":              application,
-							"app_state":             state,
-							"app_health":            health,
-							"app_pendingRequests":   wm_pendingRequest,
-							"app_completedRequests": wm_completedRequest,
-						},
-					}
-					bt.client.Publish(application_status_event)
-					logp.Info("Application status - event sent")
-				}
+		json_comp_status, _ := gabs.ParseJSON([]byte(resp_app_comp.String()))
+		items, _ := json_comp_status.S("items").Children()
+
+		for _, child := range items {
+			comp := child.Data().(map[string]interface{})
+
+			application_status_event := beat.Event{
+				Timestamp: time.Now(),
+				Fields: common.MapStr{
+					"server":                       bt.config.ServerName,
+					"metric_type":                  "application_status",
+					"app_name":                     application,
+					"app_componentName":            comp["componentName"],
+					"app_state":                    comp["status"],
+					"app_health":                   server_health["state"],
+					"app_openSessionsCurrentCount": comp["openSessionsCurrentCount"],
+					"app_sessionsOpenedTotalCount": comp["sessionsOpenedTotalCount"],
+					"app_openSessionsHighCount":    comp["openSessionsHighCount"],
+				},
 			}
+			bt.client.Publish(application_status_event)
+			logp.Info("Application status - event sent")
 		}
 	}
 }
