@@ -59,10 +59,10 @@ func (bt *Weblogicbeat) Run(b *beat.Beat) error {
 		bt.ServerStatusEvent()
 
 		// DATASOURCES STATUS
-		bt.DatasourceStatusEvent()
+	//	bt.DatasourceStatusEvent()
 
 		// APPLICATIONS STATUS
-		bt.ApplicationStatusEvent()
+	//	bt.ApplicationStatusEvent()
 
 		counter++
 	}
@@ -71,15 +71,26 @@ func (bt *Weblogicbeat) Run(b *beat.Beat) error {
 func (bt *Weblogicbeat) ServerStatusEvent() {
 	resp_server_status, _ := resty.R().
 		SetHeader("Accept", "application/json").
+		SetHeader("X-Requested-By", "weblogicbeat").
 		SetBasicAuth(bt.config.Username, bt.config.Password).
-		Get(bt.config.Host + "/management/wls/latest/servers")
+		Get(bt.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes?links=none&fields=name,state,healthState")
 
 	json_server_status, _ := gabs.ParseJSON([]byte(resp_server_status.String()))
 	items, _ := json_server_status.S("items").Children()
 
 	for _, child := range items {
 		server := child.Data().(map[string]interface{})
-		server_health  := server["health"].(map[string]interface{})
+		server_health  := server["healthState"].(map[string]interface{})
+
+		resp_server_jvm, _ := resty.R().
+			SetHeader("Accept", "application/json").
+			SetHeader("X-Requested-By", "weblogicbeat").
+			SetBasicAuth(bt.config.Username, bt.config.Password).
+			Get(bt.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + server["name"] + "/JVMRuntime?links=none&fields=heapSizeCurrent,heapFreeCurrent,heapFreePercent,heapSizeMax,processCpuLoad")
+
+		json_server_jvm, _ := gabs.ParseJSON([]byte(resp_server_jvm.String()))
+		server_jvm := json_server_jvm.Data().(map[string]interface{})
+
 
 		server_status_event := beat.Event{
 			Timestamp: time.Now(),
@@ -88,10 +99,11 @@ func (bt *Weblogicbeat) ServerStatusEvent() {
 				"metric_type": "server_status",
 				"srv_name" : server["name"],
 				"srv_state" : server["state"],
-				"srv_heapFreeCurrent": int(server["heapFreeCurrent"].(float64)/1000000),
-				"srv_heapSizeCurrent": int(server["heapSizeCurrent"].(float64)/1000000),
-				"srv_activeHttpSessionCount": server["activeHttpSessionCount"],
-				"srv_jvmProcessorLoad": 0.3, // FIX  server["jvmProcessorLoad"]
+				"srv_heapFreeCurrent": int(server_jvm["heapFreeCurrent"].(float64)/1000000),
+				"srv_heapSizeCurrent": int(server_jvm["heapSizeCurrent"].(float64)/1000000),
+				"srv_heapSizeMax": int(server_jvm["heapSizeMax"].(float64)/1000000),
+				"srv_jvmProcessorLoad": server_jvm["processCpuLoad"].(float64),
+				"srv_symptoms": fmt.Sprintf("%v", server_health["symptoms"]),
 				"srv_health": server_health["state"],
 			},
 		}
@@ -101,6 +113,23 @@ func (bt *Weblogicbeat) ServerStatusEvent() {
 }
 
 func (bt *Weblogicbeat) DatasourceStatusEvent() {
+
+	resp_server_status, _ := resty.R().
+		SetHeader("Accept", "application/json").
+		SetHeader("X-Requested-By", "weblogicbeat").
+		SetBasicAuth(bt.config.Username, bt.config.Password).
+		Get(bt.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes?links=none&fields=name")
+
+	json_server_status, _ := gabs.ParseJSON([]byte(resp_server_status.String()))
+	items, _ := json_server_status.S("items").Children()
+
+	for _, child := range items {
+		server := child.Data().(map[string]interface{})
+
+
+
+	}
+
 	for _, datasource := range bt.config.Datasources {
 		resp, _ := resty.R().
 			SetHeader("Accept", "application/json").

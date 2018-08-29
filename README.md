@@ -113,3 +113,8 @@ This will fetch and create all images required for the build process. The whole 
 ## Future work
 - The management/tenant-monitoring REST api is deprecated, update to new api.
 - Include other information gathered from JMX. (use jolokia)
+
+## References
+
+- Using WebLogic 12C RESTful management for monitoring WebLogic Domains
+https://blog.dbi-services.com/using-weblogic-12c-restful-management-for-monitoring-weblogic-domains/

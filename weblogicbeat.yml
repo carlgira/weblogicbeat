@@ -4,7 +4,7 @@
 
 weblogicbeat:
   # Defines how often an event is sent to the output
-  period: 10s
+  period: 1s
   host: http://localhost:7001
   username: weblogic
   password: welcome1
@@ -69,9 +69,13 @@ setup.kibana:
 # Configure what output to use when sending the data collected by the beat.
 
 #-------------------------- Elasticsearch output ------------------------------
-output.elasticsearch:
+output.console:
+  pretty: true
+
+
+#output.elasticsearch:
   # Array of hosts to connect to.
-  hosts: ["localhost:9200"]
+#  hosts: ["localhost:9200"]
 
   # Optional protocol and basic auth credentials.
   #protocol: "https"

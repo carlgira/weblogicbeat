@@ -47,6 +47,16 @@
       required: false
       description: >
         PLEASE UPDATE DOCUMENTATION
+    - name: srv_heapSizeMax
+      type: int
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: srv_symptoms
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
     - name: ds_name
       type: string
       required: false
