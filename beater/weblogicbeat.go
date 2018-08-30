@@ -113,14 +113,14 @@ func (bt *Weblogicbeat) ServerStatusEvent() {
 		Fields: common.MapStr{
 			"server":               bt.config.ServerName,
 			"metric_type":          "server_status",
-			"srv_name":             server["name"],
-			"srv_state":            server["state"],
-			"srv_heapFreeCurrent":  int(server_jvm["heapFreeCurrent"].(float64) / 1000000),
-			"srv_heapSizeCurrent":  int(server_jvm["heapSizeCurrent"].(float64) / 1000000),
-			"srv_heapSizeMax":      int(server_jvm["heapSizeMax"].(float64) / 1000000),
-			"srv_jvmProcessorLoad": processCpuLoad,
-			"srv_symptoms":         fmt.Sprintf("%v", server_health["symptoms"]),
-			"srv_health":           server_health["state"],
+			"srv_name":             bt.ValidateString(server["name"]),
+			"srv_state":            bt.ValidateString(server["state"]),
+			"srv_heapFreeCurrent":  int(bt.ValidateFloat(server_jvm["heapFreeCurrent"]) / 1000000),
+			"srv_heapSizeCurrent":  int(bt.ValidateFloat(server_jvm["heapSizeCurrent"]) / 1000000),
+			"srv_heapSizeMax":      int(bt.ValidateFloat(server_jvm["heapSizeMax"]) / 1000000),
+			"srv_jvmProcessorLoad": bt.ValidateInt(processCpuLoad),
+			"srv_symptoms":         bt.ValidateString(fmt.Sprintf("%v", server_health["symptoms"])),
+			"srv_health":           bt.ValidateString(server_health["state"]),
 		},
 	}
 	bt.client.Publish(server_status_event)
@@ -162,11 +162,11 @@ func (bt *Weblogicbeat) DatasourceStatusEvent() {
 				"server":                           bt.config.ServerName,
 				"metric_type":                      "datasource_status",
 				"ds_name":                          datasource,
-				"ds_state":                         dsinfo["state"],
-				"ds_enabled":                       dsinfo["enabled"],
-				"ds_activeConnectionsCurrentCount": dsinfo["activeConnectionsCurrentCount"],
-				"ds_connectionsTotalCount":         dsinfo["connectionsTotalCount"],
-				"ds_activeConnectionsAverageCount": dsinfo["activeConnectionsAverageCount"],
+				"ds_state":                         bt.ValidateString(dsinfo["state"]),
+				"ds_enabled":                       bt.ValidateString(dsinfo["enabled"]),
+				"ds_activeConnectionsCurrentCount": bt.ValidateInt(dsinfo["activeConnectionsCurrentCount"]),
+				"ds_connectionsTotalCount":         bt.ValidateInt(dsinfo["connectionsTotalCount"]),
+				"ds_activeConnectionsAverageCount": bt.ValidateInt(dsinfo["activeConnectionsAverageCount"]),
 				"ds_testpool":                      dstest_value,
 			},
 		}
@@ -216,12 +216,12 @@ func (bt *Weblogicbeat) ApplicationStatusEvent() {
 					"server":                       bt.config.ServerName,
 					"metric_type":                  "application_status",
 					"app_name":                     application,
-					"app_componentName":            comp["componentName"],
-					"app_state":                    comp["status"],
-					"app_health":                   server_health["state"],
-					"app_openSessionsCurrentCount": comp["openSessionsCurrentCount"],
-					"app_sessionsOpenedTotalCount": comp["sessionsOpenedTotalCount"],
-					"app_openSessionsHighCount":    comp["openSessionsHighCount"],
+					"app_componentName":            bt.ValidateString(comp["componentName"]),
+					"app_state":                    bt.ValidateString(comp["status"]),
+					"app_health":                   bt.ValidateString(server_health["state"]),
+					"app_openSessionsCurrentCount": bt.ValidateInt(comp["openSessionsCurrentCount"]),
+					"app_sessionsOpenedTotalCount": bt.ValidateInt(comp["sessionsOpenedTotalCount"]),
+					"app_openSessionsHighCount":    bt.ValidateInt(comp["openSessionsHighCount"]),
 				},
 			}
 			bt.client.Publish(application_status_event)
@@ -241,6 +241,33 @@ func (bt *Weblogicbeat) SendErrorEvent(serverName string, metricType string, err
 	}
 	bt.client.Publish(error_event)
 	logp.Info("Error : %s", err)
+}
+
+func (bt *Weblogicbeat) ValidateString(value interface{}) string {
+	r, err := value.(string)
+	if !err {
+		return "DATA_ERROR"
+	} else if len(r) == 0 {
+		return "NO_DATA"
+	}
+	return r
+}
+
+func (bt *Weblogicbeat) ValidateInt(value interface{}) int {
+	r, err := value.(int)
+	if !err {
+		return -1
+	}
+
+	return r
+}
+
+func (bt *Weblogicbeat) ValidateFloat(value interface{}) float64 {
+	r, err := value.(float64)
+	if !err {
+		return -1.0
+	}
+	return r
 }
 
 // Stop stops weblogicbeat.
