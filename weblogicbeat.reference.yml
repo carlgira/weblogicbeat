@@ -9,8 +9,8 @@ weblogicbeat:
   username: weblogic
   password: welcome1
   servername: server1
-  datasources: ["EssDS"]
-  applications: ["ESSAPP"]
+  datasources: ["EssDS", "EDNDataSource"]
+  applications: ["ESSAPP", "sample-app"]
 
 #================================ General ======================================
 

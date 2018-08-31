@@ -67,6 +67,9 @@ func (bt *Weblogicbeat) Run(b *beat.Beat) error {
 		// APPLICATIONS STATUS
 		bt.ApplicationStatusEvent()
 
+		// THREAD STATUS
+		bt.ThreadStatusEvent()
+
 		counter++
 	}
 }
@@ -91,7 +94,7 @@ func (bt *Weblogicbeat) ServerStatusEvent() {
 		SetHeader("Accept", "application/json").
 		SetHeader("X-Requested-By", "weblogicbeat").
 		SetBasicAuth(bt.config.Username, bt.config.Password).
-		Get(bt.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + bt.config.ServerName + "/JVMRuntime?links=none&fields=heapSizeCurrent,heapFreeCurrent,heapFreePercent,heapSizeMax,processCpuLoad")
+		Get(bt.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + bt.config.ServerName + "/JVMRuntime?links=none&fields=heapSizeCurrent,heapFreeCurrent,heapFreePercent,heapSizeMax")
 
 	if err_server_jvm != nil {
 		bt.SendErrorEvent(bt.config.ServerName, "server_status", fmt.Sprintf("%v", err_server_jvm))
@@ -101,25 +104,18 @@ func (bt *Weblogicbeat) ServerStatusEvent() {
 	json_server_jvm, _ := gabs.ParseJSON([]byte(resp_server_jvm.String()))
 	server_jvm := json_server_jvm.Data().(map[string]interface{})
 
-	processCpuLoad := server_jvm["processCpuLoad"]
-
-	if processCpuLoad == nil {
-		processCpuLoad = 0
-	}
-
 	server_status_event := beat.Event{
 		Timestamp: time.Now(),
 		Fields: common.MapStr{
-			"server":               bt.config.ServerName,
-			"metric_type":          "server_status",
-			"srv_name":             server["name"],
-			"srv_state":            server["state"],
-			"srv_heapFreeCurrent":  int(server_jvm["heapFreeCurrent"].(float64) / 1000000),
-			"srv_heapSizeCurrent":  int(server_jvm["heapSizeCurrent"].(float64) / 1000000),
-			"srv_heapSizeMax":      int(server_jvm["heapSizeMax"].(float64) / 1000000),
-			"srv_jvmProcessorLoad": server_jvm["processCpuLoad"],
-			"srv_symptoms":         fmt.Sprintf("%v", server_health["symptoms"]),
-			"srv_health":           server_health["state"],
+			"wb_server":           bt.config.ServerName,
+			"wb_metric_type":      "server_status",
+			"srv_name":            server["name"],
+			"srv_state":           server["state"],
+			"srv_heapFreeCurrent": int(server_jvm["heapFreeCurrent"].(float64) / 1000000),
+			"srv_heapSizeCurrent": int(server_jvm["heapSizeCurrent"].(float64) / 1000000),
+			"srv_heapSizeMax":     int(server_jvm["heapSizeMax"].(float64) / 1000000),
+			"srv_symptoms":        fmt.Sprintf("%v", server_health["symptoms"]),
+			"srv_health":          server_health["state"],
 		},
 	}
 	bt.client.Publish(server_status_event)
@@ -158,8 +154,8 @@ func (bt *Weblogicbeat) DatasourceStatusEvent() {
 		datasource_status_event := beat.Event{
 			Timestamp: time.Now(),
 			Fields: common.MapStr{
-				"server":                           bt.config.ServerName,
-				"metric_type":                      "datasource_status",
+				"wb_server":                        bt.config.ServerName,
+				"wb_metric_type":                   "datasource_status",
 				"ds_name":                          datasource,
 				"ds_state":                         dsinfo["state"],
 				"ds_enabled":                       dsinfo["enabled"],
@@ -212,8 +208,8 @@ func (bt *Weblogicbeat) ApplicationStatusEvent() {
 			application_status_event := beat.Event{
 				Timestamp: time.Now(),
 				Fields: common.MapStr{
-					"server":                       bt.config.ServerName,
-					"metric_type":                  "application_status",
+					"wb_server":                    bt.config.ServerName,
+					"wb_metric_type":               "application_status",
 					"app_name":                     application,
 					"app_componentName":            comp["componentName"],
 					"app_state":                    comp["status"],
@@ -227,6 +223,41 @@ func (bt *Weblogicbeat) ApplicationStatusEvent() {
 			logp.Info("Application status - event sent")
 		}
 	}
+}
+
+func (bt *Weblogicbeat) ThreadStatusEvent() {
+	resp_thread_status, err_thread_status := resty.R().
+		SetHeader("Accept", "application/json").
+		SetHeader("X-Requested-By", "weblogicbeat").
+		SetBasicAuth(bt.config.Username, bt.config.Password).
+		Get(bt.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + bt.config.ServerName + "/threadPoolRuntime?links=none&fields=overloadRejectedRequestsCount,pendingUserRequestCount,executeThreadTotalCount,healthState,stuckThreadCount,throughput,hoggingThreadCount")
+
+	if err_thread_status != nil {
+		bt.SendErrorEvent(bt.config.ServerName, "thread_status", fmt.Sprintf("%v", err_thread_status))
+		return
+	}
+
+	json_thread_status, _ := gabs.ParseJSON([]byte(resp_thread_status.String()))
+	threads := json_thread_status.Data().(map[string]interface{})
+	thread_health := threads["healthState"].(map[string]interface{})
+
+	thread_status_event := beat.Event{
+		Timestamp: time.Now(),
+		Fields: common.MapStr{
+			"wb_server":                        bt.config.ServerName,
+			"wb_metric_type":                   "thread_status",
+			"th_overloadRejectedRequestsCount": threads["overloadRejectedRequestsCount"],
+			"th_pendingUserRequestCount":       threads["pendingUserRequestCount"],
+			"th_executeThreadTotalCount":       threads["executeThreadTotalCount"],
+			"th_stuckThreadCount":              threads["stuckThreadCount"],
+			"th_throughput":                    threads["throughput"],
+			"th_hoggingThreadCount":            threads["hoggingThreadCount"].(float64),
+			"th_state":                         thread_health["state"],
+			"th_symptoms":                      fmt.Sprintf("%v", thread_health["symptoms"]),
+		},
+	}
+	bt.client.Publish(thread_status_event)
+	logp.Info("Server status - event sent")
 }
 
 func (bt *Weblogicbeat) SendErrorEvent(serverName string, metricType string, err string) {

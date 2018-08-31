@@ -10,6 +10,8 @@ This is a custom metricbeat that monitor weblogic domains. Capture information a
 - Datasource health and statistics
 - Applications health and statistics
 
+*Tested with version 6.3.2 of elasticsearch and kibana*
+
 ## Configuration
 
 ### Enable RESTful Management Services
@@ -22,8 +24,6 @@ This is a custom metricbeat that monitor weblogic domains. Capture information a
 
 ### Download Release
 
-[https://github.com/carlgira/weblogicbeat/releases](https://github.com/carlgira/weblogic-beat/releases)
-
 ### Run
 
 To run Weblogicbeat with debugging output enabled, run:
@@ -33,6 +33,10 @@ To run Weblogicbeat with debugging output enabled, run:
 ```
 
 ### Kibana
+
+Install
+
+./kibana-plugin install https://github.com/fbaligand/kibana-enhanced-table/releases/download/v0.7.1/enhanced-table-0.7.1_6.3.2.zip
 
 It includes a set of visualizations and one dashboard for weblogic monitoring. Import the file [kibana-weblogic-dashboard-export.json](kibana-weblogic-dashboard-export.json)
 
@@ -44,13 +48,13 @@ Sample configuration file
 
 ```
 weblogicbeat:
-  period: 10s
+  period: 60s
   host: http://localhost:7001
   username: weblogic
   password: welcome1
   servername: server1
-  datasources: ["EssDS", "EssDS"]
-  applications: ["StuckThreadForFree", "otherapp"]
+  datasources: ["EssDS", "EDNDataSource"]
+  applications: ["ESSAPP", "sample-app"]
 ```
 - period: How often an event is sent to the output
 - host: Admin host and port
@@ -119,3 +123,9 @@ https://blog.dbi-services.com/using-weblogic-12c-restful-management-for-monitori
 
 - Monitoring Domain Resources
 https://docs.oracle.com/middleware/1221/wls/WLRUR/examples.htm#WLRUR203
+
+- Weblogic monitoring exporter
+https://github.com/oracle/weblogic-monitoring-exporter
+
+- Jolokia
+https://jolokia.org/
