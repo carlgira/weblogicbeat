@@ -6,7 +6,7 @@ This is a custom metricbeat that monitor weblogic domains. Capture information a
 
 - Server state and health
 - Memory use
-- CPU
+- Threads status
 - Datasource health and statistics
 - Applications health and statistics
 
