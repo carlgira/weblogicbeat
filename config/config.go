@@ -10,7 +10,7 @@ type Config struct {
 	Host         string        `config:"host"`
 	Username     string        `config:"username"`
 	Password     string        `config:"password"`
-	ServerName   string        `config:"servername"`
+	ServerNames  []string      `config:"servernames"`
 	Datasources  []string      `config:"datasources"`
 	Applications []string      `config:"applications"`
 }
@@ -20,7 +20,7 @@ var DefaultConfig = Config{
 	Host:         "",
 	Username:     "",
 	Password:     "",
-	ServerName:   "",
+	ServerNames:  []string{},
 	Datasources:  []string{},
 	Applications: []string{},
 }

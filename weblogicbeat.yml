@@ -4,13 +4,13 @@
 
 weblogicbeat:
   # Defines how often an event is sent to the output
-  period: 60s
-  host: http://localhost:7001
+  period: 2s
+  host: http://mktvppt04.os.amadeus.net:7121
   username: weblogic
-  password: welcome1
-  servername: server1
-  datasources: ["EssDS", "EDNDataSource"]
-  applications: ["ESSAPP", "sample-app"]
+  password: Manager3pt01
+  servernames: ["vppt01"]
+  datasources: ["incaDatasource"]
+  applications: ["inca-ear"]
 
 #================================ General =====================================
 
@@ -26,7 +26,8 @@ weblogicbeat:
 # output.
 #fields:
 #  env: staging
-
+output.console:
+  pretty: true
 
 #============================== Dashboards =====================================
 # These settings control loading the sample dashboards to the Kibana index. Loading
@@ -70,9 +71,9 @@ setup.kibana:
 # Configure what output to use when sending the data collected by the beat.
 
 #-------------------------- Elasticsearch output ------------------------------
-output.elasticsearch:
+#output.elasticsearch:
   # Array of hosts to connect to.
-  hosts: ["localhost:9200"]
+#  hosts: ["localhost:9200"]
 
   # Optional protocol and basic auth credentials.
   #protocol: "https"

@@ -8,6 +8,6 @@ weblogicbeat:
   host: http://localhost:7001
   username: weblogic
   password: welcome1
-  servername: server1
+  servernames: ["server1"]
   datasources: ["EssDS", "EDNDataSource"]
   applications: ["ESSAPP", "sample-app"]
