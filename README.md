@@ -50,14 +50,16 @@ Sample configuration file
 weblogicbeat:
   period: 60s
   host: http://localhost:7001
+  wlsversion : 12.2
   username: weblogic
   password: welcome1
-  servername: server1
+  servernames: ["server1", "server2"]
   datasources: ["EssDS", "EDNDataSource"]
   applications: ["ESSAPP", "sample-app"]
 ```
 - period: How often an event is sent to the output
 - host: Admin host and port
+- wlsversion: Weblogic version. Suported versions 12.1.2 or 12.2
 - username: Weblogic admin user
 - password: Weblogic admin password
 - datasources: Array of datasources to monitor
@@ -94,6 +96,14 @@ mage setup
 ```
 
 *I had some issues on my mac with the make setup. I had to create manually a python2 env in build/python-env and install with pip the functools32 dependency. Be careful when using mage clean the build directory is erased and the python-env directory needs to be created again*
+
+```
+cd build
+rm -rf python-env
+virtualenv python-env --python=python2.7
+source python-env/bin/activate
+pip install functools32
+```
 
 
 ### Build

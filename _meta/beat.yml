@@ -6,6 +6,7 @@ weblogicbeat:
   # Defines how often an event is sent to the output
   period: 60s
   host: http://localhost:7001
+  wlsversion : 12.1.2
   username: weblogic
   password: welcome1
   servernames: ["server1"]

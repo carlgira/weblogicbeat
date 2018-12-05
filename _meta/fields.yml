@@ -12,7 +12,22 @@
       required: true
       description: >
         PLEASE UPDATE DOCUMENTATION
-    - name: metric_error
+    - name: err_server
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: err_metric_type
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: err_metric_error
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: err_metric_body
       type: string
       required: false
       description: >
@@ -62,6 +77,11 @@
       required: false
       description: >
         PLEASE UPDATE DOCUMENTATION
+    - name: ds_server
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
     - name: ds_state
       type: string
       required: false
@@ -98,6 +118,11 @@
       description: >
         PLEASE UPDATE DOCUMENTATION
     - name: app_name
+      type: string
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: app_server
       type: string
       required: false
       description: >

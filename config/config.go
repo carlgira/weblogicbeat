@@ -8,6 +8,7 @@ import "time"
 type Config struct {
 	Period       time.Duration `config:"period"`
 	Host         string        `config:"host"`
+	WlsVersion   string        `config:"wlsversion"`
 	Username     string        `config:"username"`
 	Password     string        `config:"password"`
 	ServerNames  []string      `config:"servernames"`
@@ -18,6 +19,7 @@ type Config struct {
 var DefaultConfig = Config{
 	Period:       1 * time.Second,
 	Host:         "",
+	WlsVersion:   "12.2",
 	Username:     "",
 	Password:     "",
 	ServerNames:  []string{},

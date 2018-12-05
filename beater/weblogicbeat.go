@@ -57,23 +57,26 @@ func (bt *Weblogicbeat) Run(b *beat.Beat) error {
 		case <-ticker.C:
 		}
 
-		wls := &Weblogic122{
-			bt:     *bt,
-			config: bt.config,
+		if bt.config.WlsVersion == "12.1.2" {
+			wls := &Weblogic1212{
+				bt:     *bt,
+				config: bt.config,
+			}
+			wls.ServerStatusEvent()
+			wls.DatasourceStatusEvent()
+			wls.ApplicationStatusEvent()
+			wls.ThreadStatusEvent()
+
+		} else {
+			wls := &Weblogic122{
+				bt:     *bt,
+				config: bt.config,
+			}
+			wls.ServerStatusEvent()
+			wls.DatasourceStatusEvent()
+			wls.ApplicationStatusEvent()
+			wls.ThreadStatusEvent()
 		}
-
-		// SERVERS STATUS
-		wls.ServerStatusEvent()
-
-		// DATASOURCES STATUS
-		wls.DatasourceStatusEvent()
-
-		// APPLICATIONS STATUS
-		wls.ApplicationStatusEvent()
-
-		// THREAD STATUS
-		wls.ThreadStatusEvent()
-
 		counter++
 	}
 }

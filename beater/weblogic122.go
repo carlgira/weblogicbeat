@@ -28,8 +28,8 @@ func (wls *Weblogic122) ServerStatusEvent() {
 			SetBasicAuth(wls.config.Username, wls.config.Password).
 			Get(wls.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + server_name + "?links=none&fields=name,state,healthState")
 
-		if err_server_status != nil {
-			wls.SendErrorEvent(server_name, "server_status", fmt.Sprintf("%v", err_server_status))
+		if resp_server_status.StatusCode() != 200 {
+			wls.SendErrorEvent(server_name, "server_status", fmt.Sprintf("%v", err_server_status), fmt.Sprintf("%v", resp_server_status))
 			continue
 		}
 
@@ -43,8 +43,8 @@ func (wls *Weblogic122) ServerStatusEvent() {
 			SetBasicAuth(wls.config.Username, wls.config.Password).
 			Get(wls.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + server_name + "/JVMRuntime?links=none&fields=heapSizeCurrent,heapFreeCurrent,heapFreePercent,heapSizeMax")
 
-		if err_server_jvm != nil {
-			wls.SendErrorEvent(server_name, "server_status", fmt.Sprintf("%v", err_server_jvm))
+		if resp_server_jvm.StatusCode() != 200 {
+			wls.SendErrorEvent(server_name, "server_status", fmt.Sprintf("%v", err_server_jvm), fmt.Sprintf("%v", resp_server_jvm))
 			continue
 		}
 
@@ -80,8 +80,8 @@ func (wls *Weblogic122) DatasourceStatusEvent() {
 				SetBasicAuth(wls.config.Username, wls.config.Password).
 				Get(wls.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + server_name + "/JDBCServiceRuntime/JDBCDataSourceRuntimeMBeans/" + datasource + "?links=none&fields=activeConnectionsCurrentCount,activeConnectionsAverageCount,connectionsTotalCount,enabled,state,name")
 
-			if error_ds != nil {
-				wls.SendErrorEvent(server_name, "datasource_status", fmt.Sprintf("%v", error_ds))
+			if resp_ds.StatusCode() != 200 {
+				wls.SendErrorEvent(server_name, "datasource_status", fmt.Sprintf("%v", error_ds), fmt.Sprintf("%v", resp_ds))
 				continue
 			}
 
@@ -105,6 +105,7 @@ func (wls *Weblogic122) DatasourceStatusEvent() {
 				Fields: common.MapStr{
 					"wb_server":                        server_name,
 					"wb_metric_type":                   "datasource_status",
+					"ds_server":                        server_name,
 					"ds_name":                          datasource,
 					"ds_state":                         dsinfo["state"],
 					"ds_enabled":                       dsinfo["enabled"],
@@ -130,8 +131,8 @@ func (wls *Weblogic122) ApplicationStatusEvent() {
 				SetBasicAuth(wls.config.Username, wls.config.Password).
 				Get(wls.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + server_name + "/applicationRuntimes/" + application + "?links=none&fields=name,healthState")
 
-			if err_app != nil {
-				wls.SendErrorEvent(server_name, "application_status", fmt.Sprintf("%v", err_app))
+			if resp_app.StatusCode() != 200 {
+				wls.SendErrorEvent(server_name, "application_status", fmt.Sprintf("%v", err_app), fmt.Sprintf("%v", resp_app))
 				continue
 			}
 
@@ -145,8 +146,8 @@ func (wls *Weblogic122) ApplicationStatusEvent() {
 				SetBasicAuth(wls.config.Username, wls.config.Password).
 				Get(wls.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + server_name + "/applicationRuntimes/" + application + "/componentRuntimes?fields=openSessionsCurrentCount,sessionsOpenedTotalCount,openSessionsHighCount,applicationIdentifier,status,componentName&links=none")
 
-			if err_app_comp != nil {
-				wls.SendErrorEvent(server_name, "application_status", fmt.Sprintf("%v", err_app_comp))
+			if resp_app_comp.StatusCode() != 200 {
+				wls.SendErrorEvent(server_name, "application_status", fmt.Sprintf("%v", err_app_comp), fmt.Sprintf("%v", resp_app_comp))
 				continue
 			}
 
@@ -161,6 +162,7 @@ func (wls *Weblogic122) ApplicationStatusEvent() {
 					Fields: common.MapStr{
 						"wb_server":                    server_name,
 						"wb_metric_type":               "application_status",
+						"app_server":                   server_name,
 						"app_name":                     application,
 						"app_componentName":            comp["componentName"],
 						"app_state":                    comp["status"],
@@ -186,8 +188,8 @@ func (wls *Weblogic122) ThreadStatusEvent() {
 			SetBasicAuth(wls.config.Username, wls.config.Password).
 			Get(wls.config.Host + "/management/weblogic/latest/domainRuntime/serverRuntimes/" + server_name + "/threadPoolRuntime?links=none&fields=overloadRejectedRequestsCount,pendingUserRequestCount,executeThreadTotalCount,healthState,stuckThreadCount,throughput,hoggingThreadCount")
 
-		if err_thread_status != nil {
-			wls.SendErrorEvent(server_name, "thread_status", fmt.Sprintf("%v", err_thread_status))
+		if resp_thread_status.StatusCode() != 200 {
+			wls.SendErrorEvent(server_name, "thread_status", fmt.Sprintf("%v", err_thread_status), fmt.Sprintf("%v", resp_thread_status))
 			continue
 		}
 
@@ -200,6 +202,7 @@ func (wls *Weblogic122) ThreadStatusEvent() {
 			Fields: common.MapStr{
 				"wb_server":                        server_name,
 				"wb_metric_type":                   "thread_status",
+				"th_server":                        server_name,
 				"th_overloadRejectedRequestsCount": threads["overloadRejectedRequestsCount"],
 				"th_pendingUserRequestCount":       threads["pendingUserRequestCount"],
 				"th_executeThreadTotalCount":       threads["executeThreadTotalCount"],
@@ -215,13 +218,14 @@ func (wls *Weblogic122) ThreadStatusEvent() {
 	}
 }
 
-func (wls *Weblogic122) SendErrorEvent(serverName string, metricType string, err string) {
+func (wls *Weblogic122) SendErrorEvent(serverName string, metricType string, err string, body string) {
 	error_event := beat.Event{
 		Timestamp: time.Now(),
 		Fields: common.MapStr{
-			"server":       serverName,
-			"metric_type":  metricType,
-			"metric_error": err,
+			"err_server":       serverName,
+			"err_metric_type":  metricType,
+			"err_metric_error": err,
+			"err_metric_body":  body,
 		},
 	}
 	wls.bt.client.Publish(error_event)
